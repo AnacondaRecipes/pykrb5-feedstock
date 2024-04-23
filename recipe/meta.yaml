@@ -12,7 +12,9 @@ source:
 build:
   script: {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
   number: 0
-  skip: true  # [py<37]
+  # pykrb5 isn't supported on win64, it fails because of an error:
+  # '"krb5-config --cflags krb5" is not recognized as an internal or external command'
+  skip: true  # [py<37 or win]
 
 requirements:
   build:
