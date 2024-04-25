@@ -10,11 +10,16 @@ source:
   sha256: 7125ee240dad951cc0a71e567c51b215238e490e87ad67b1af9a69dd90e63bca
 
 build:
-  script: {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
   number: 0
   # pykrb5 isn't supported on win64, it fails because of an error:
   # '"krb5-config --cflags krb5" is not recognized as an internal or external command'
   skip: true  # [py<37 or win]
+  script: {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
+  missing_dso_whitelist:  # [osx]
+    # pykrb5 requires Heimdal on MacOS
+    # see https://github.com/jborean93/pykrb5/blob/v0.5.1/README.md#installation 
+    # and https://github.com/jborean93/pykrb5/blob/v0.5.1/setup.py#L181-L182
+    - /System/Library/PrivateFrameworks/Heimdal.framework/Versions/A/Heimdal  # [osx]
 
 requirements:
   build:
@@ -30,13 +35,35 @@ requirements:
     - krb5 >=1.20.1,<1.21.0a0
     - python
 
+# The tests fail because of the error "FileNotFoundError: [Errno 2] No such file or directory: '/usr/sbin/kdb5_util'".
+# The real location of kdb5_util is $PREFIX/sbin not /usr/sbin but it's hardcoded in the k5test's source code,
+# see https://github.com/pythongssapi/k5test/blob/17512bd2137ffcdd1fdb7ff4210891ad34d27803/k5test/realm.py#L459
+{% set tests_to_skip = "_not_a_real_test" %}
+{% set tests_to_skip = tests_to_skip + " or test_cc_default or test_cc_default_name or test_cc_store_cred" %}
+{% set tests_to_skip = tests_to_skip + " or test_cc_switch or test_cc_cache_match or test_cc_retrieve_remove_cred" %}
+{% set tests_to_skip = tests_to_skip + " or test_set_default_realm or :test_get_init_creds_keytab or test_get_init_creds_password" %}
+{% set tests_to_skip = tests_to_skip + " or test_get_init_creds_password_prompt or test_get_init_creds_password_prompt_failure or test_get_creds_keytab" %}
+{% set tests_to_skip = tests_to_skip + " or test_get_creds_keytab_wrong_principal or test_init_creds_set_password or test_init_creds_set_password_invalid" %}
+{% set tests_to_skip = tests_to_skip + " or test_kt_default or test_kt_default_name or test_kt_get_name" %}
+{% set tests_to_skip = tests_to_skip + " or test_kt_enumerate or test_kt_get_entry_empty or test_kt_get_entry" %}
+{% set tests_to_skip = tests_to_skip + " or test_kt_get_entry_multiple_kvno or test_kt_get_entry_multiple_enctype or test_kt_read_service_key_empty" %}
+{% set tests_to_skip = tests_to_skip + " or test_kt_read_service_key_multiple_kvno or test_kt_read_service_key_multiple_enctype or test_kt_client_default" %}
+{% set tests_to_skip = tests_to_skip + " or test_parse_principal or test_parse_principal_no_realm_failure or test_unparse_principal" %}
+{% set tests_to_skip = tests_to_skip + " or test_enctype_to_string or test_enctype_to_string_invalid or test_string_to_enctype_invalid or test_get_init_creds_keytab" %}
+
 test:
+  source_files:
+    - tests
+    - stubs/k5test
   imports:
     - krb5
   requires:
     - pip
+    - pytest
   commands:
     - pip check
+    - pip install k5test
+    - pytest -v -k "not ({{ tests_to_skip }})"
 
 about:
   home: https://github.com/jborean93/pykrb5
