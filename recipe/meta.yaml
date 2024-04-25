@@ -8,6 +8,8 @@ package:
 source:
   url: https://pypi.io/packages/source/k/krb5/krb5-{{ version }}.tar.gz
   sha256: 7125ee240dad951cc0a71e567c51b215238e490e87ad67b1af9a69dd90e63bca
+  patches:
+    - use-krb5-instead-of-heimdal-framework.patch
 
 build:
   number: 0
@@ -15,15 +17,17 @@ build:
   # '"krb5-config --cflags krb5" is not recognized as an internal or external command'
   skip: true  # [py<37 or win]
   script: {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
-  missing_dso_whitelist:  # [osx]
+  #missing_dso_whitelist:  # [osx]
     # pykrb5 requires Heimdal on MacOS
     # see https://github.com/jborean93/pykrb5/blob/v0.5.1/README.md#installation 
     # and https://github.com/jborean93/pykrb5/blob/v0.5.1/setup.py#L181-L182
-    - /System/Library/PrivateFrameworks/Heimdal.framework/Versions/A/Heimdal  # [osx]
+    #- /System/Library/PrivateFrameworks/Heimdal.framework/Versions/A/Heimdal  # [osx]
 
 requirements:
   build:
     - {{ compiler('c') }}
+    - patch     # [unix]
+    - m2-patch  # [win]
   host:
     - cython >=0.29.32,<4.0.0
     - krb5 1.20
@@ -50,6 +54,9 @@ requirements:
 {% set tests_to_skip = tests_to_skip + " or test_kt_read_service_key_multiple_kvno or test_kt_read_service_key_multiple_enctype or test_kt_client_default" %}
 {% set tests_to_skip = tests_to_skip + " or test_parse_principal or test_parse_principal_no_realm_failure or test_unparse_principal" %}
 {% set tests_to_skip = tests_to_skip + " or test_enctype_to_string or test_enctype_to_string_invalid or test_string_to_enctype_invalid or test_get_init_creds_keytab" %}
+# After using conda's krb5 instead of macOS's private krb5 framework, macOS doesn't support the DIR type so this returns False,
+# see https://github.com/jborean93/pykrb5/blob/v0.5.1/tests/test_ccache.py#L222
+{% set tests_to_skip = tests_to_skip + " or test_cc_supports_switch" %}  # [osx]
 
 test:
   source_files:
