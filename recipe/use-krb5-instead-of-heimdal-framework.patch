@@ -1,0 +1,31 @@
+diff --git a/setup.py b/setup.py
+index 1d27cf9..66e4d9e 100755
+--- a/setup.py
++++ b/setup.py
+@@ -125,10 +125,12 @@ def get_krb5_lib_path(
+     elif not krb5_lib:
+         for opt in libraries:
+             if opt.startswith("krb5"):
+-                ext = {
+-                    "nt": "dll",
+-                    "darwin": "dylib",
+-                }.get(os.name, "so")
++                if os.name == "nt":
++                    ext = "dll"
++                elif sys.platform == "darwin":
++                    ext = "dylib"
++                else:
++                    ext = "so"
+ 
+                 krb5_lib = f"lib{opt}.{ext}"
+                 break
+@@ -159,9 +161,6 @@ if not SKIP_EXTENSIONS:
+     print(f"Using krb5-config at '{kc}'")
+ 
+     macos_native = False
+-    if sys.platform == "darwin":
+-        mac_ver = [int(v) for v in platform.mac_ver()[0].split(".")]
+-        macos_native = mac_ver >= [10, 7, 0]
+ 
+     compile_args, raw_link_args = [
+         shlex.split(os.environ[e], posix=True) if e in os.environ else None
