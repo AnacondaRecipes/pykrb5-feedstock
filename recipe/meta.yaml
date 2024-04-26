@@ -17,11 +17,6 @@ build:
   # '"krb5-config --cflags krb5" is not recognized as an internal or external command'
   skip: true  # [py<37 or win]
   script: {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
-  #missing_dso_whitelist:  # [osx]
-    # pykrb5 requires Heimdal on MacOS
-    # see https://github.com/jborean93/pykrb5/blob/v0.5.1/README.md#installation 
-    # and https://github.com/jborean93/pykrb5/blob/v0.5.1/setup.py#L181-L182
-    #- /System/Library/PrivateFrameworks/Heimdal.framework/Versions/A/Heimdal  # [osx]
 
 requirements:
   build:
@@ -36,7 +31,7 @@ requirements:
     - setuptools
     - wheel
   run:
-    - krb5 >=1.20.1,<1.21.0a0
+    - krb5
     - python
 
 # The tests fail because of the error "FileNotFoundError: [Errno 2] No such file or directory: '/usr/sbin/kdb5_util'".
