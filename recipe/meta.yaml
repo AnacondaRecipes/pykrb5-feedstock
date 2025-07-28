@@ -6,13 +6,13 @@ package:
   version: {{ version }}
 
 source:
-  url: https://pypi.io/packages/source/k/krb5/krb5-{{ version }}.tar.gz
+  url: https://pypi.org/packages/source/k/krb5/krb5-{{ version }}.tar.gz
   sha256: 7125ee240dad951cc0a71e567c51b215238e490e87ad67b1af9a69dd90e63bca
   patches:
     - use-krb5-instead-of-heimdal-framework.patch
 
 build:
-  number: 0
+  number: 1
   # pykrb5 isn't supported on win64, it fails because of an error:
   # '"krb5-config --cflags krb5" is not recognized as an internal or external command'
   skip: true  # [py<37 or win]
@@ -20,12 +20,13 @@ build:
 
 requirements:
   build:
+    - {{ stdlib('c') }}
     - {{ compiler('c') }}
-    - patch     # [unix]
-    - m2-patch  # [win]
+    - patch        # [unix]
+    - msys2-patch  # [win]
   host:
     - cython >=0.29.32,<4.0.0
-    - krb5 1.20
+    - libkrb5 {{ krb5 }}
     - pip
     - python
     - setuptools
