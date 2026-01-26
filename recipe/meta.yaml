@@ -21,6 +21,8 @@ requirements:
     - {{ stdlib('c') }}
     - {{ compiler('c') }}
   host:
+    # No cython 3.2.1 on main channel. 3.2.2 is a patched version of 3.2.1 (fully backward compatible)
+    # https://github.com/cython/cython/blob/2a8ee41263f6bc898a32c75a9156071bee5e8788/CHANGES.rst#322-2025-11-30
     - cython 3.2.2
     - libkrb5 {{ libkrb5 }}
     - pip
@@ -36,7 +38,7 @@ requirements:
 {% set tests_to_skip = "_not_a_real_test" %}
 {% set tests_to_skip = tests_to_skip + " or test_cc_default or test_cc_default_name or test_cc_store_cred" %}
 {% set tests_to_skip = tests_to_skip + " or test_cc_switch or test_cc_cache_match or test_cc_retrieve_remove_cred" %}
-{% set tests_to_skip = tests_to_skip + " or test_set_default_realm or :test_get_init_creds_keytab or test_get_init_creds_password" %}
+{% set tests_to_skip = tests_to_skip + " or test_set_default_realm or test_get_init_creds_keytab or test_get_init_creds_password" %}
 {% set tests_to_skip = tests_to_skip + " or test_get_init_creds_password_prompt or test_get_init_creds_password_prompt_failure or test_get_creds_keytab" %}
 {% set tests_to_skip = tests_to_skip + " or test_get_creds_keytab_wrong_principal or test_init_creds_set_password or test_init_creds_set_password_invalid" %}
 {% set tests_to_skip = tests_to_skip + " or test_kt_default or test_kt_default_name or test_kt_get_name" %}
@@ -44,7 +46,7 @@ requirements:
 {% set tests_to_skip = tests_to_skip + " or test_kt_get_entry_multiple_kvno or test_kt_get_entry_multiple_enctype or test_kt_read_service_key_empty" %}
 {% set tests_to_skip = tests_to_skip + " or test_kt_read_service_key_multiple_kvno or test_kt_read_service_key_multiple_enctype or test_kt_client_default" %}
 {% set tests_to_skip = tests_to_skip + " or test_parse_principal or test_parse_principal_no_realm_failure or test_unparse_principal" %}
-{% set tests_to_skip = tests_to_skip + " or test_enctype_to_string or test_enctype_to_string_invalid or test_string_to_enctype_invalid or test_get_init_creds_keytab" %}
+{% set tests_to_skip = tests_to_skip + " or test_enctype_to_string or test_enctype_to_string_invalid or test_string_to_enctype_invalid" %}
 {% set tests_to_skip = tests_to_skip + " or test_cc_config or test_set_password or test_renew_creds or test_validate_creds" %}
 {% set tests_to_skip = tests_to_skip + " or test_get_etype_info or  test_creds_serialization or test_principal_nul" %}
 
