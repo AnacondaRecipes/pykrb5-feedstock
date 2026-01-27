@@ -1,5 +1,5 @@
 {% set name = "pykrb5" %}
-{% set version = "0.5.1" %}
+{% set version = "0.9.0" %}
 
 package:
   name: {{ name|lower }}
@@ -7,35 +7,29 @@ package:
 
 source:
   url: https://pypi.org/packages/source/k/krb5/krb5-{{ version }}.tar.gz
-  sha256: 7125ee240dad951cc0a71e567c51b215238e490e87ad67b1af9a69dd90e63bca
+  sha256: 4cdd2c85ff4770108edaf48fedf19888cf956ff374e2e97e40f8412b048caee6
 
 build:
-  number: 1
+  number: 0
   # pykrb5 isn't supported on win64, it fails because of an error:
   # '"krb5-config --cflags krb5" is not recognized as an internal or external command'
-  skip: true  # [py<38 or win]
+  skip: true  # [py<39 or win]
   script: {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
 
 requirements:
   build:
     - {{ stdlib('c') }}
     - {{ compiler('c') }}
-    - patch        # [unix]
-    - msys2-patch  # [win]
   host:
-    - cython >=0.29.32,<4.0.0
-    # libkrb5 1.21.3 isn't compatible with pykrb5 0.5.1+ on osx:
-    # because of an error: "In file included from src/krb5/_ccache.c:1256: src/krb5/python_krb5.h:4:9: error: unknown type name 'krb5_times'".
-    # MacOS Heimdal framework is used instead like conda-forge did.
-    # See the heimdal's source code with 'krb5_times': https://github.com/heimdal/heimdal/blob/master/lib/krb5/krb5.h#L410-L415,
-    # and the krb5's source code https://github.com/krb5/krb5/blob/krb5-1.21.3-final/src/include/krb5/krb5.hin
-    - libkrb5 {{ krb5 }}  # [not osx]
+    # No cython 3.2.1 on main channel. 3.2.2 is a patched version of 3.2.1 (fully backward compatible)
+    # https://github.com/cython/cython/blob/2a8ee41263f6bc898a32c75a9156071bee5e8788/CHANGES.rst#322-2025-11-30
+    - cython 3.2.2
+    - libkrb5 {{ libkrb5 }}
     - pip
     - python
     - setuptools >=42.0.0
-    - wheel
   run:
-    - libkrb5             # [not osx]
+    - libkrb5
     - python
 
 # The tests fail because of the error "FileNotFoundError: [Errno 2] No such file or directory: '/usr/sbin/kdb5_util'".
@@ -44,7 +38,7 @@ requirements:
 {% set tests_to_skip = "_not_a_real_test" %}
 {% set tests_to_skip = tests_to_skip + " or test_cc_default or test_cc_default_name or test_cc_store_cred" %}
 {% set tests_to_skip = tests_to_skip + " or test_cc_switch or test_cc_cache_match or test_cc_retrieve_remove_cred" %}
-{% set tests_to_skip = tests_to_skip + " or test_set_default_realm or :test_get_init_creds_keytab or test_get_init_creds_password" %}
+{% set tests_to_skip = tests_to_skip + " or test_set_default_realm or test_get_init_creds_keytab or test_get_init_creds_password" %}
 {% set tests_to_skip = tests_to_skip + " or test_get_init_creds_password_prompt or test_get_init_creds_password_prompt_failure or test_get_creds_keytab" %}
 {% set tests_to_skip = tests_to_skip + " or test_get_creds_keytab_wrong_principal or test_init_creds_set_password or test_init_creds_set_password_invalid" %}
 {% set tests_to_skip = tests_to_skip + " or test_kt_default or test_kt_default_name or test_kt_get_name" %}
@@ -52,12 +46,9 @@ requirements:
 {% set tests_to_skip = tests_to_skip + " or test_kt_get_entry_multiple_kvno or test_kt_get_entry_multiple_enctype or test_kt_read_service_key_empty" %}
 {% set tests_to_skip = tests_to_skip + " or test_kt_read_service_key_multiple_kvno or test_kt_read_service_key_multiple_enctype or test_kt_client_default" %}
 {% set tests_to_skip = tests_to_skip + " or test_parse_principal or test_parse_principal_no_realm_failure or test_unparse_principal" %}
-{% set tests_to_skip = tests_to_skip + " or test_enctype_to_string or test_enctype_to_string_invalid or test_string_to_enctype_invalid or test_get_init_creds_keytab" %}
+{% set tests_to_skip = tests_to_skip + " or test_enctype_to_string or test_enctype_to_string_invalid or test_string_to_enctype_invalid" %}
 {% set tests_to_skip = tests_to_skip + " or test_cc_config or test_set_password or test_renew_creds or test_validate_creds" %}
 {% set tests_to_skip = tests_to_skip + " or test_get_etype_info or  test_creds_serialization or test_principal_nul" %}
-# After using conda's krb5 instead of macOS's private krb5 framework, macOS doesn't support the DIR type so this returns False,
-# see https://github.com/jborean93/pykrb5/blob/v0.5.1/tests/test_ccache.py#L222
-{% set tests_to_skip = tests_to_skip + " or test_cc_supports_switch" %}  # [osx]
 
 test:
   source_files:
