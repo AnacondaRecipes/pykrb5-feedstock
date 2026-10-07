@@ -21,9 +21,7 @@ requirements:
     - {{ stdlib('c') }}
     - {{ compiler('c') }}
   host:
-    # No cython 3.2.1 on main channel. 3.2.2 is a patched version of 3.2.1 (fully backward compatible)
-    # https://github.com/cython/cython/blob/2a8ee41263f6bc898a32c75a9156071bee5e8788/CHANGES.rst#322-2025-11-30
-    - cython 3.3.0
+    - cython ==3.3.0
     - libkrb5 {{ libkrb5 }}
     - pip
     - python
